@@ -1,0 +1,23 @@
+{
+  "consumption": 1500,
+  "contracts": [
+    {
+      "id": "365af6db-41b2-4959-9c49-93b3097f36ef",
+      "name": "Persistent Co",
+      "baseFee": 15,
+      "pricePerKwh": 40,
+      "bonus": 200
+    },
+    {
+      "id": "1c7c1da6-45cc-469f-8743-4b2e9105fb9d",
+      "name": "Cheap Offer",
+      "baseFee": 15,
+      "pricePerKwh": 40,
+      "bonus": 100
+    }
+  ],
+  "currentContract": {
+    "baseFee": 15,
+    "pricePerKwh": 40
+  }
+}
