@@ -16,7 +16,7 @@ function App() {
 
   // Fetch data on mount
   useEffect(() => {
-    fetch('http://localhost:3000/api/data')
+    fetch('/api/data')
       .then(res => res.json())
       .then(data => {
         setConsumption(data.consumption)
@@ -32,7 +32,7 @@ function App() {
     if (isInitialMount.current) return
 
     const timer = setTimeout(() => {
-      fetch('http://localhost:3000/api/data', {
+      fetch('/api/data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
