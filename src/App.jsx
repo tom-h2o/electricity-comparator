@@ -17,14 +17,24 @@ function App() {
   // Fetch data on mount
   useEffect(() => {
     fetch('/api/data')
-      .then(res => res.json())
-      .then(data => {
-        setConsumption(data.consumption)
-        setContracts(data.contracts || [])
-        setCurrentContract(data.currentContract || null)
-        isInitialMount.current = false
+      .then(res => {
+        if (!res.ok) throw new Error('API request failed');
+        return res.json();
       })
-      .catch(err => console.error('Failed to load data', err))
+      .then(data => {
+        if (data && typeof data.consumption === 'number') {
+          setConsumption(data.consumption);
+          setContracts(data.contracts || []);
+          setCurrentContract(data.currentContract || null);
+        }
+        isInitialMount.current = false;
+      })
+      .catch(err => {
+        console.error('Failed to load data', err);
+        // We still allow the app to function with default values,
+        // but it might not save properly if the API is entirely down.
+        isInitialMount.current = false;
+      })
   }, [])
 
   // Auto-save data
