@@ -2,33 +2,47 @@ import React, { useMemo } from 'react'
 
 export default function ContractList({ contracts, consumption, onDelete, onEdit, currentContract }) {
     const sortedContracts = useMemo(() => {
+        let allContracts = [...contracts]
         let currentTotal = 0
         if (currentContract) {
             currentTotal = (currentContract.baseFee * 12) + ((consumption * currentContract.pricePerKwh) / 100)
+            allContracts.push({
+                isBaseline: true,
+                id: 'baseline-contract',
+                name: 'Current Contract (Baseline)',
+                baseFee: currentContract.baseFee,
+                pricePerKwh: currentContract.pricePerKwh,
+                bonus: 0
+            })
         }
 
-        return contracts.map(contract => {
+        return allContracts.map(contract => {
             const baseCost = contract.baseFee * 12
             const usageCost = (consumption * contract.pricePerKwh) / 100
-            const totalCost = baseCost + usageCost - contract.bonus
+            
+            const subTotal = baseCost + usageCost - (contract.bonus || 0)
+            const percentageDiscount = contract.percentageBonus ? (subTotal * contract.percentageBonus) / 100 : 0
+            const totalCost = subTotal - percentageDiscount
+
             const effectivePrice = (totalCost / consumption) * 100
-            const savings = currentContract ? currentTotal - totalCost : 0
+            const savings = currentContract && !contract.isBaseline ? currentTotal - totalCost : 0
 
             return {
                 ...contract,
                 baseCost,
                 usageCost,
                 totalCost,
+                percentageDiscount,
                 effectivePrice,
                 savings
             }
         }).sort((a, b) => a.totalCost - b.totalCost)
     }, [contracts, consumption, currentContract])
 
-    if (contracts.length === 0) {
+    if (sortedContracts.length === 0) {
         return (
             <div className="text-center" style={{ padding: '2rem', color: 'var(--text-muted)' }}>
-                No contracts added yet. Add some above to see comparisons!
+                No contracts combined yet. Add some above to see comparisons!
             </div>
         )
     }
@@ -42,7 +56,8 @@ export default function ContractList({ contracts, consumption, onDelete, onEdit,
                         key={contract.id}
                         className="card"
                         style={{
-                            borderLeft: isBest ? '4px solid var(--secondary)' : '1px solid var(--border)',
+                            borderLeft: contract.isBaseline ? '4px solid var(--primary)' : (isBest ? '4px solid var(--secondary)' : '1px solid var(--border)'),
+                            backgroundColor: contract.isBaseline ? '#f0f9ff' : 'var(--bg-card)',
                             position: 'relative'
                         }}
                     >
@@ -77,7 +92,7 @@ export default function ContractList({ contracts, consumption, onDelete, onEdit,
                                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
                                     {contract.totalCost.toFixed(2)} €
                                 </div>
-                                {currentContract && (
+                                {currentContract && !contract.isBaseline && (
                                     <div style={{
                                         fontSize: '0.875rem',
                                         fontWeight: 'bold',
@@ -114,26 +129,38 @@ export default function ContractList({ contracts, consumption, onDelete, onEdit,
                                 <strong>{contract.usageCost.toFixed(2)} €</strong>
                             </div>
                             <div>
-                                <span style={{ display: 'block', color: 'var(--text-muted)' }}>Bonus</span>
+                                <span style={{ display: 'block', color: 'var(--text-muted)' }}>Abs. Bonus</span>
                                 <strong style={{ color: contract.bonus > 0 ? 'var(--secondary)' : 'inherit' }}>
-                                    -{contract.bonus.toFixed(2)} €
+                                    -{(contract.bonus || 0).toFixed(2)} €
                                 </strong>
                             </div>
+                            {contract.percentageBonus > 0 && (
+                                <div>
+                                    <span style={{ display: 'block', color: 'var(--text-muted)' }}>% Bonus ({contract.percentageBonus}%)</span>
+                                    <strong style={{ color: 'var(--secondary)' }}>
+                                        -{contract.percentageDiscount.toFixed(2)} €
+                                    </strong>
+                                </div>
+                            )}
                             <div style={{ textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                <button
-                                    onClick={() => onEdit(contract.id)}
-                                    className="btn btn-secondary"
-                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', borderColor: 'var(--border)' }}
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => onDelete(contract.id)}
-                                    className="btn btn-secondary"
-                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'var(--border)' }}
-                                >
-                                    Remove
-                                </button>
+                                {!contract.isBaseline && (
+                                    <>
+                                        <button
+                                            onClick={() => onEdit(contract.id)}
+                                            className="btn btn-secondary"
+                                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', borderColor: 'var(--border)' }}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => onDelete(contract.id)}
+                                            className="btn btn-secondary"
+                                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'var(--border)' }}
+                                        >
+                                            Remove
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

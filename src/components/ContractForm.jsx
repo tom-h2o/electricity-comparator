@@ -5,7 +5,8 @@ export default function ContractForm({ onAdd, onUpdate, initialData, onCancel })
         name: '',
         baseFee: '',
         pricePerKwh: '',
-        bonus: ''
+        bonus: '',
+        percentageBonus: ''
     })
 
     // Populate form when editing
@@ -15,10 +16,11 @@ export default function ContractForm({ onAdd, onUpdate, initialData, onCancel })
                 name: initialData.name,
                 baseFee: initialData.baseFee,
                 pricePerKwh: initialData.pricePerKwh,
-                bonus: initialData.bonus
+                bonus: initialData.bonus || '',
+                percentageBonus: initialData.percentageBonus || ''
             })
         } else {
-            setForm({ name: '', baseFee: '', pricePerKwh: '', bonus: '' })
+            setForm({ name: '', baseFee: '', pricePerKwh: '', bonus: '', percentageBonus: '' })
         }
     }, [initialData])
 
@@ -31,14 +33,15 @@ export default function ContractForm({ onAdd, onUpdate, initialData, onCancel })
             name: form.name,
             baseFee: Number(form.baseFee),
             pricePerKwh: Number(form.pricePerKwh),
-            bonus: Number(form.bonus) || 0
+            bonus: Number(form.bonus) || 0,
+            percentageBonus: Number(form.percentageBonus) || 0
         }
 
         if (initialData) {
             onUpdate(contractData)
         } else {
             onAdd(contractData)
-            setForm({ name: '', baseFee: '', pricePerKwh: '', bonus: '' })
+            setForm({ name: '', baseFee: '', pricePerKwh: '', bonus: '', percentageBonus: '' })
         }
     }
 
@@ -91,17 +94,32 @@ export default function ContractForm({ onAdd, onUpdate, initialData, onCancel })
                 </div>
             </div>
 
-            <div className="input-group">
-                <label className="input-label">Bonus / One-time Payment (€)</label>
-                <input
-                    type="number"
-                    step="0.01"
-                    name="bonus"
-                    value={form.bonus}
-                    onChange={handleChange}
-                    className="input-control"
-                    placeholder="0 (Optional)"
-                />
+            <div className="flex-row" style={{ flexWrap: 'wrap' }}>
+                <div className="input-group" style={{ flex: 1, minWidth: '120px' }}>
+                    <label className="input-label">Absolute Bonus (€)</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="bonus"
+                        value={form.bonus}
+                        onChange={handleChange}
+                        className="input-control"
+                        placeholder="0 (Optional)"
+                    />
+                </div>
+
+                <div className="input-group" style={{ flex: 1, minWidth: '120px' }}>
+                    <label className="input-label">Percentage Bonus (%)</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="percentageBonus"
+                        value={form.percentageBonus}
+                        onChange={handleChange}
+                        className="input-control"
+                        placeholder="0 (Optional)"
+                    />
+                </div>
             </div>
 
             <div className="flex-row">

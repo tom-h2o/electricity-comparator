@@ -23,13 +23,21 @@ export default function CostChart({ contracts, consumption, currentContract }) {
             total: (currentContract.baseFee * 12) + ((consumption * currentContract.pricePerKwh) / 100)
         }] : []),
         // Add other contracts
-        ...contracts.map(contract => ({
-            name: contract.name,
-            baseCost: contract.baseFee * 12,
-            usageCost: (consumption * contract.pricePerKwh) / 100,
-            bonus: -contract.bonus, // Negative to show deduction
-            total: (contract.baseFee * 12) + ((consumption * contract.pricePerKwh) / 100) - contract.bonus
-        }))
+        ...contracts.map(contract => {
+            const baseCost = contract.baseFee * 12;
+            const usageCost = (consumption * contract.pricePerKwh) / 100;
+            const subTotal = baseCost + usageCost - (contract.bonus || 0);
+            const percentageDiscount = contract.percentageBonus ? (subTotal * contract.percentageBonus) / 100 : 0;
+            const total = subTotal - percentageDiscount;
+            
+            return {
+                name: contract.name,
+                baseCost,
+                usageCost,
+                bonus: -(contract.bonus || 0) - percentageDiscount, // Negative to show deduction
+                total
+            };
+        })
     ].sort((a, b) => a.total - b.total)
 
     if (data.length === 0) return null
